@@ -1,0 +1,36 @@
+requirements: ollama with 'granite4:3b'
+
+build kaoto/forage locally from hhttps://github.com/JiriOndrusek/camel-forage/tree/POC-quarkus-langchain4j-guardrails
+
+add forage plugin: camel plugin add forage --command='forage' --description='Forage Camel JBang Plugin' --artifactId='camel-jbang-plugin-forage' --groupId='io.kaoto.forage' --version='1.0-SNAPSHOT' --gav='io.kaoto.forage:camel-jbang-plugin-forage:1.0-SNAPSHOT'
+
+
+once the current quarkus platform contains Camel Quarkus 3.32.0 you can do:
+
+ 1 - start: camel forage run --runtime=quarkus main-route.camel.yaml application.properties forage-agent-factory.properties --dep=mvn:io.kaoto.forage:forage-agent:1.0-SNAPSHOT --dep=mvn:io.quarkiverse.langchain4j:quarkus-langchain4j-ollama:1.2.2 --dep=mvn:io.kaoto.forage:forage-model-quarkus:1.0-SNAPSHOT --dep=mvn:io.kaoto.forage:forage-guardrails-input:1.0-SNAPSHOT
+
+ 2 - ask model: curl -i -X POST -H 'Content-Type: text/html' -d '"Hello. my printer emits smoke!"' http://localhost:8080/camel/chat
+
+ 3 - or ask model: curl -i -X POST -H 'Content-Type: text/html' -d '"Hello. my printer never emits smoke!"' http://localhost:8080/camel/chat
+
+until such Quarkus-platform exists, you need to export the project into quarkus runtime via:
+
+ 1 - camel forage export --runtime=quarkus --dir=quarkus main-route.camel.yaml application.properties forage-agent-factory.properties --dep=mvn:io.kaoto.forage:forage-agent:1.0-SNAPSHOT --dep=mvn:io.quarkiverse.langchain4j:quarkus-langchain4j-ollama:1.2.2 --dep=mvn:io.kaoto.forage:forage-model-quarkus:1.0-SNAPSHOT --dep=mvn:io.kaoto.forage:forage-guardrails-input:1.0-SNAPSHOT
+
+ 3 - build Camel-quarkus from branch `camel-main` -> to contain the latest camel bits, the built version should be 3.32.0-SNAPSHOT
+
+ 4 - manually change camel-quarkus bom in the exported project to
+
+            <dependency>
+                <groupId>org.apache.camel.quarkus</groupId>
+                <artifactId>camel-quarkus-bom</artifactId>
+                <version>3.32.0-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+ 5 - run: mvn quarkus:dev
+
+ 6 - ask model: curl -i -X POST -H 'Content-Type: text/html' -d '"Hello. my printer emits smoke!"' http://localhost:8080/camel/chat
+
+ 7 - or ask model: curl -i -X POST -H 'Content-Type: text/html' -d '"Hello. my printer never emits smoke!"' http://localhost:8080/camel/chat
